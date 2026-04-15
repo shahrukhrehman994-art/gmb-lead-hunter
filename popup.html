@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GMB Lead Hunter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design Tokens ─────────────────────────────────────── */
+    :root {
+      --bg:        #F0F4F8;
+      --surface:   #FFFFFF;
+      --surface2:  #F8F9FA;
+      --surface3:  #EEF2F7;
+      --border:    #DDE3EE;
+      --accent:    #2563EB;
+      --accent-h:  #1D4ED8;
+      --accent2:   #0EA5E9;
+      --green:     #10B981;
+      --green-bg:  rgba(16,185,129,.10);
+      --green-bd:  rgba(16,185,129,.25);
+      --red:       #EF4444;
+      --red-bg:    rgba(239,68,68,.08);
+      --red-bd:    rgba(239,68,68,.2);
+      --amber:     #F59E0B;
+      --amber-bg:  rgba(245,158,11,.10);
+      --amber-bd:  rgba(245,158,11,.25);
+      --blue-bg:   rgba(37,99,235,.08);
+      --blue-bd:   rgba(37,99,235,.2);
+      --purple:    #8B5CF6;
+      --purple-bg: rgba(139,92,246,.10);
+      --purple-bd: rgba(139,92,246,.25);
+      --cyan:      #06B6D4;
+      --cyan-bg:   rgba(6,182,212,.08);
+      --cyan-bd:   rgba(6,182,212,.2);
+      --text:      #1E293B;
+      --text-soft: #334155;
+      --muted:     #64748B;
+      --muted-lt:  #94A3B8;
+      --radius-sm: 6px;
+      --radius:    10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.04);
+      --shadow:    0 4px 12px rgba(15,23,42,.08), 0 1px 4px rgba(15,23,42,.04);
+      --shadow-lg: 0 8px 24px rgba(15,23,42,.10), 0 2px 8px rgba(15,23,42,.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 560px;
+      min-height: 580px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 13.5px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-mark {
+      width: 34px; height: 34px;
+      background: var(--accent);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(37,99,235,.3);
+    }
+    .logo-name { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: .01em; }
+    .logo-name em { color: var(--accent); font-style: normal; }
+    .logo-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .hdr-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: .07em;
+      padding: 4px 10px; border-radius: 20px;
+      background: var(--blue-bg); color: var(--accent);
+      border: 1px solid var(--blue-bd);
+    }
+
+    /* ── Tabs ───────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+    }
+    .tab {
+      flex: 1; padding: 10px 6px;
+      text-align: center; font-size: 11px; font-weight: 600;
+      letter-spacing: .03em; color: var(--muted); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: all .15s ease;
+    }
+    .tab:hover { color: var(--accent); background: var(--surface3); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg); font-weight: 700; }
+
+    /* ── Panels ─────────────────────────────────────────────── */
+    .panel { display: none; padding: 16px; }
+    .panel.active { display: block; }
+
+    /* ── Form ───────────────────────────────────────────────── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .fg { display: flex; flex-direction: column; gap: 5px; }
+    label {
+      font-size: 10px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    input, select {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 500;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+      box-shadow: var(--shadow-sm);
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+    }
+    input::placeholder { color: var(--muted-lt); }
+    select option { background: #fff; color: var(--text); }
+
+    /* ── Info box ───────────────────────────────────────────── */
+    .how-it-works {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      margin-bottom: 12px;
+      font-size: 11px; color: var(--muted);
+      line-height: 1.65;
+      box-shadow: var(--shadow-sm);
+    }
+    .how-it-works strong {
+      font-size: 10px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--accent);
+      display: block; margin-bottom: 4px;
+    }
+
+    /* ── Buttons ────────────────────────────────────────────── */
+    .btn {
+      width: 100%; padding: 11px;
+      border-radius: var(--radius);
+      border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: .02em;
+      transition: all .15s ease;
+    }
+    .btn-primary {
+      background: var(--accent); color: #fff;
+      box-shadow: 0 2px 8px rgba(37,99,235,.30);
+    }
+    .btn-primary:hover {
+      background: var(--accent-h);
+      box-shadow: 0 4px 16px rgba(37,99,235,.40);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-abort {
+      background: var(--red-bg); color: var(--red);
+      border: 1.5px solid var(--red-bd);
+      margin-top: 6px;
+    }
+    .btn-abort:hover { background: rgba(239,68,68,.14); }
+
+    /* ── Countdown ──────────────────────────────────────────── */
+    .countdown-overlay {
+      display: none; flex-direction: column; align-items: center;
+      gap: 12px; padding: 22px 16px; margin-top: 12px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    }
+    .countdown-overlay.show { display: flex; }
+    .countdown-number {
+      font-size: 52px; font-weight: 800;
+      color: var(--accent); line-height: 1;
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.07); opacity: .8; } }
+    .countdown-label { font-size: 11px; color: var(--muted); letter-spacing: .04em; font-weight: 600; }
+    .countdown-bar-bg { width: 100%; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .countdown-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width .9s ease; width: 0%; }
+
+    /* ── Progress ───────────────────────────────────────────── */
+    .progress-wrap { display: none; flex-direction: column; gap: 8px; padding: 14px 0 4px; }
+    .progress-wrap.show { display: flex; }
+    .progress-top { display: flex; align-items: center; justify-content: space-between; }
+    .progress-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+    .progress-pct { font-size: 11px; font-weight: 700; color: var(--accent); }
+    .progress-bar-bg { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width .35s; }
+
+    /* ── Stats ──────────────────────────────────────────────── */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-bottom: 12px; }
+    .stat {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 10px 6px;
+      text-align: center; box-shadow: var(--shadow-sm);
+    }
+    .stat-n { font-size: 20px; font-weight: 800; color: var(--accent); }
+    .stat-l { font-size: 9px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-top: 2px; font-weight: 600; }
+    .stat-n.green  { color: var(--green); }
+    .stat-n.purple { color: var(--purple); }
+    .stat-n.red    { color: var(--red); }
+
+    /* ── Error ──────────────────────────────────────────────── */
+    .error-box {
+      background: var(--red-bg); border: 1.5px solid var(--red-bd);
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: 12px; color: var(--red); display: none; margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .error-box.show { display: block; }
+
+    /* ── Leads header ───────────────────────────────────────── */
+    .leads-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; gap: 8px;
+    }
+    .leads-title { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+    .export-row { display: flex; gap: 6px; flex-shrink: 0; }
+    .mini-btn {
+      font-size: 10px; font-weight: 600; padding: 5px 10px;
+      border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+      background: var(--surface); color: var(--text-soft);
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all .12s; white-space: nowrap;
+      box-shadow: var(--shadow-sm);
+    }
+    .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Filter Chips ───────────────────────────────────────── */
+    .chips {
+      display: flex; gap: 5px; margin-bottom: 12px;
+      flex-wrap: wrap;
+      background: var(--surface);
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .chip {
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 10px; font-weight: 600; letter-spacing: .02em;
+      cursor: pointer; border: 1.5px solid var(--border);
+      color: var(--muted); background: transparent;
+      transition: all .13s; white-space: nowrap;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--blue-bg); }
+    .chip.active { border-color: var(--accent); color: var(--accent); background: var(--blue-bg); font-weight: 700; }
+
+    /* ── Business list ──────────────────────────────────────── */
+    .biz-list {
+      display: flex; flex-direction: column; gap: 8px;
+      max-height: 340px; overflow-y: auto; padding-right: 4px;
+    }
+    .biz-list::-webkit-scrollbar { width: 4px; }
+    .biz-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .biz-list::-webkit-scrollbar-track { background: transparent; }
+
+    .biz-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 15px;
+      transition: border-color .15s, box-shadow .15s;
+      animation: fadeIn .2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    .biz-card.lead { border-left: 3px solid var(--green); }
+    .biz-card:hover { border-color: rgba(37,99,235,.3); box-shadow: var(--shadow); }
+
+    .biz-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 8px; margin-bottom: 5px;
+    }
+    .biz-name {
+      font-size: 13px; font-weight: 700; color: var(--text);
+      line-height: 1.35;
+      max-width: 280px;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .badge-row { display: flex; gap: 4px; flex-wrap: wrap; flex-shrink: 0; }
+    .badge {
+      font-size: 9px; font-weight: 700; letter-spacing: .04em;
+      padding: 3px 8px; border-radius: 20px; white-space: nowrap;
+    }
+    .badge-lead     { background: var(--blue-bg);   color: var(--accent); border: 1px solid var(--blue-bd); }
+    .badge-unclaimed{ background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-bd); }
+    .badge-reputation{background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-bd); }
+    .badge-optim    { background: var(--cyan-bg);   color: var(--cyan);   border: 1px solid var(--cyan-bd); }
+    .badge-stale    { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-bd); }
+    .badge-closed   { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-bd); }
+
+    .biz-addr {
+      font-size: 11px; color: var(--muted); margin-bottom: 8px;
+      line-height: 1.4;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .biz-meta {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .rating { font-size: 11px; color: var(--amber); font-weight: 700; }
+    .rating span { color: var(--muted); font-weight: 500; }
+    .biz-phone { font-size: 11px; color: var(--muted-lt); font-weight: 500; }
+    .biz-phone.dim { opacity: .55; font-style: italic; }
+
+    /* ── Status chips ───────────────────────────────────────── */
+    .status-chip {
+      font-size: 9px; font-weight: 700; padding: 3px 8px;
+      border-radius: 20px; letter-spacing: .03em;
+    }
+    .status-open    { background: var(--green-bg); color: var(--green);  border: 1px solid var(--green-bd); }
+    .status-closed  { background: var(--red-bg);   color: var(--red);    border: 1px solid var(--red-bd); }
+    .status-unknown { background: var(--surface3);  color: var(--muted);  border: 1px solid var(--border); }
+
+    /* ── Info tags ──────────────────────────────────────────── */
+    .info-tag {
+      font-size: 9px; font-weight: 600; padding: 3px 8px;
+      border-radius: 20px; background: var(--blue-bg);
+      color: var(--accent); border: 1px solid var(--blue-bd);
+    }
+    .info-tag.tag-warn { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-bd); }
+
+    /* ── Review rows ────────────────────────────────────────── */
+    .review-stale-row {
+      font-size: 10px; color: var(--amber); font-weight: 600;
+      margin-bottom: 7px; padding: 5px 10px;
+      background: var(--amber-bg); border: 1px solid var(--amber-bd);
+      border-radius: var(--radius-sm); line-height: 1.4;
+    }
+    .review-reputation-row {
+      font-size: 10px; color: var(--red); font-weight: 600;
+      margin-bottom: 7px; padding: 5px 10px;
+      background: var(--red-bg); border: 1px solid var(--red-bd);
+      border-radius: var(--radius-sm); line-height: 1.4;
+    }
+
+    /* ── Social ─────────────────────────────────────────────── */
+    .social-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+    .social-row.empty-socials { font-size: 10px; color: var(--muted-lt); font-style: italic; }
+    .social-chip {
+      font-size: 9px; font-weight: 700; padding: 3px 9px;
+      border-radius: 20px; text-decoration: none;
+      display: inline-flex; align-items: center;
+      transition: all .12s; cursor: pointer;
+    }
+    .social-chip:hover { transform: translateY(-1px); filter: brightness(.9); }
+    .social-facebook  { background: rgba(24,119,242,.08);  color: #1877F2; border: 1px solid rgba(24,119,242,.2); }
+    .social-instagram { background: rgba(228,64,95,.08);   color: #E1306C; border: 1px solid rgba(228,64,95,.2); }
+    .social-twitter   { background: rgba(29,161,242,.08);  color: #1DA1F2; border: 1px solid rgba(29,161,242,.2); }
+    .social-linkedin  { background: rgba(10,102,194,.08);  color: #0A66C2; border: 1px solid rgba(10,102,194,.2); }
+    .social-youtube   { background: rgba(255,0,0,.07);     color: #FF0000; border: 1px solid rgba(255,0,0,.15); }
+    .social-tiktok    { background: rgba(0,0,0,.05);       color: #333;    border: 1px solid rgba(0,0,0,.12); }
+    .social-pinterest { background: rgba(189,8,28,.07);    color: #BD081C; border: 1px solid rgba(189,8,28,.15); }
+
+    /* ── Actions ────────────────────────────────────────────── */
+    .biz-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+    .act-btn {
+      font-size: 10px; font-weight: 700; letter-spacing: .02em;
+      padding: 5px 10px; border-radius: var(--radius-sm);
+      border: 1.5px solid; cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 3px;
+      font-family: 'Inter', sans-serif; transition: all .12s;
+      white-space: nowrap; background: transparent;
+    }
+    .act-wa    { color: #25D366; border-color: rgba(37,211,102,.3); }
+    .act-wa:hover { background: rgba(37,211,102,.08); }
+    .act-email { color: var(--accent); border-color: var(--blue-bd); }
+    .act-email:hover { background: var(--blue-bg); }
+    .act-maps  { color: var(--muted); border-color: var(--border); }
+    .act-maps:hover { color: var(--accent); border-color: rgba(37,99,235,.3); background: var(--blue-bg); }
+    .act-site  { color: var(--cyan); border-color: var(--cyan-bd); }
+    .act-site:hover { background: var(--cyan-bg); }
+    .act-audit { color: var(--purple); border-color: var(--purple-bd); }
+    .act-audit:hover { background: var(--purple-bg); }
+
+    /* ── Empty state ────────────────────────────────────────── */
+    .empty {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 10px; padding: 36px 20px; text-align: center; color: var(--muted);
+    }
+    .empty-icon { font-size: 36px; opacity: .25; font-weight: 800; }
+    .empty-title { font-size: 14px; font-weight: 700; color: var(--text); opacity: .45; }
+    .empty-sub { font-size: 11px; line-height: 1.65; max-width: 250px; color: var(--muted); }
+
+    /* Inline empty (inside list when filter = 0) */
+    .list-empty {
+      text-align: center; padding: 24px 16px;
+      color: var(--muted); font-size: 11px; line-height: 1.65;
+      background: var(--surface); border: 1.5px dashed var(--border);
+      border-radius: var(--radius); margin-top: 4px;
+    }
+    .list-empty strong { display: block; font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 4px; opacity: .6; }
+
+    /* ── Benchmark ──────────────────────────────────────────── */
+    .bench-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 14px; }
+    .bench-stat {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 12px 8px; text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .bench-stat .stat-n { font-size: 22px; }
+    .top3-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 6px;
+      font-size: 12px; box-shadow: var(--shadow-sm);
+    }
+    .top3-rank { font-size: 14px; font-weight: 800; color: var(--accent); min-width: 26px; }
+    .top3-name { font-weight: 700; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text); }
+    .top3-stats { font-size: 10px; color: var(--muted); white-space: nowrap; font-weight: 500; }
+
+    .section-title {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--accent); margin: 16px 0 9px;
+    }
+    .comp-list { max-height: 270px; overflow-y: auto; }
+    .comp-card {
+      padding: 9px 12px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+    .comp-name { font-size: 12px; font-weight: 700; margin-bottom: 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .comp-stats { font-size: 10px; color: var(--muted); font-weight: 500; }
+    .comp-good { color: var(--green); font-weight: 600; }
+    .comp-bad  { color: var(--red);   font-weight: 600; }
+    .comp-issues { font-size: 10px; color: var(--amber); margin-top: 4px; font-weight: 600; }
+
+    /* ── Audit Modal ────────────────────────────────────────── */
+    .audit-modal {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(15,23,42,.55);
+      backdrop-filter: blur(2px);
+      z-index: 100; overflow-y: auto; padding: 18px;
+    }
+    .audit-modal.show { display: block; }
+    .audit-body-wrap {
+      background: var(--surface); border-radius: var(--radius-lg);
+      padding: 20px; box-shadow: var(--shadow-lg);
+      border: 1.5px solid var(--border);
+    }
+    .audit-close {
+      position: fixed; top: 14px; right: 14px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 15px; width: 30px; height: 30px;
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 101; box-shadow: var(--shadow-sm);
+    }
+    .audit-close:hover { border-color: var(--accent); color: var(--accent); }
+    .audit-header { font-size: 17px; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+    .audit-meta { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+    .audit-section { margin-bottom: 16px; }
+    .audit-section-title {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .audit-comparison {
+      font-size: 12px; color: var(--text-soft); padding: 10px 12px;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); font-weight: 500;
+    }
+    .audit-issue {
+      padding: 10px 12px;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); margin-bottom: 6px;
+    }
+    .audit-issue-label { font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: 3px; }
+    .audit-issue-desc  { font-size: 11px; color: var(--muted); line-height: 1.55; }
+    .audit-ok {
+      font-size: 12px; color: var(--green); padding: 10px 12px;
+      background: var(--green-bg); border: 1px solid var(--green-bd); border-radius: var(--radius-sm);
+      font-weight: 600;
+    }
+    .audit-social {
+      font-size: 11px; color: var(--muted); line-height: 1.7; padding: 10px 12px;
+      background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    }
+
+    /* ── Settings ───────────────────────────────────────────── */
+    .settings-section {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px;
+      margin-bottom: 12px; box-shadow: var(--shadow-sm);
+    }
+    .settings-title {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+    }
+    .toggle-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .tgl-label { font-size: 12px; color: var(--text); font-weight: 500; }
+    .tgl-sub   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .toggle {
+      width: 36px; height: 20px; background: var(--border); border-radius: 10px;
+      cursor: pointer; position: relative; transition: background .18s; border: none; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle::after {
+      content: ''; width: 14px; height: 14px; background: white; border-radius: 50%;
+      position: absolute; top: 3px; left: 3px; transition: left .18s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle.on::after { left: 19px; }
+  </style>
+</head>
+<body>
+
+<!-- AUDIT MODAL -->
+<div class="audit-modal" id="auditModal" data-testid="audit-modal">
+  <button class="audit-close" onclick="closeAudit()" data-testid="audit-close-btn">✕</button>
+  <div class="audit-body-wrap">
+    <div id="auditBody"></div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark" data-testid="logo-mark">LH</div>
+    <div>
+      <div class="logo-name">GMB <em>LEAD</em> HUNTER</div>
+      <div class="logo-sub">Lead qualification + competitor benchmarking</div>
+    </div>
+  </div>
+  <div class="hdr-badge" data-testid="header-badge">v4 PRO</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="search" data-testid="tab-search">Search</div>
+  <div class="tab" data-tab="leads" data-testid="tab-leads">Leads <span id="leadCountBadge" style="opacity:.65;margin-left:2px;"></span></div>
+  <div class="tab" data-tab="benchmark" data-testid="tab-benchmark">Benchmark</div>
+  <div class="tab" data-tab="settings" data-testid="tab-settings">Settings</div>
+</div>
+
+<!-- ── SEARCH ─────────────────────────────────────── -->
+<div class="panel active" id="panel-search">
+  <div class="how-it-works">
+    <strong>How it works</strong>
+    Scrapes Google Maps listings. Skips permanently closed businesses and duplicates from previous sessions. Categorizes leads by: no website, unclaimed profiles, unanswered reviews, low photos, missing descriptions, and stale reviews.
+  </div>
+
+  <div class="error-box" id="errorBox" data-testid="error-box"></div>
+
+  <div class="form-grid">
+    <div class="fg">
+      <label>Location / City</label>
+      <input type="text" id="location" placeholder="e.g. Karachi, DHA" data-testid="input-location" />
+    </div>
+    <div class="fg">
+      <label>Category</label>
+      <select id="category" data-testid="select-category">
+        <option value="">-- Select --</option>
+        <optgroup label="Food &amp; Drink">
+          <option>Restaurant</option><option>Cafe</option><option>Bakery</option>
+          <option>Bar</option><option>Fast Food</option><option>Pizza</option>
+        </optgroup>
+        <optgroup label="Health">
+          <option>Doctor</option><option>Dentist</option><option>Pharmacy</option>
+          <option>Gym</option><option>Spa</option><option>Hospital</option>
+        </optgroup>
+        <optgroup label="Home Services">
+          <option>Plumber</option><option>Electrician</option><option>Carpenter</option>
+          <option>Painter</option><option>Cleaning Service</option>
+        </optgroup>
+        <optgroup label="Retail">
+          <option>Clothing Store</option><option>Electronics Store</option>
+          <option>Furniture Store</option><option>Jewelry Store</option>
+          <option>Shoe Store</option><option>Grocery Store</option>
+        </optgroup>
+        <optgroup label="Professional">
+          <option>Lawyer</option><option>Accountant</option>
+          <option>Real Estate Agent</option><option>Insurance Agency</option>
+          <option>Marketing Agency</option><option>Travel Agency</option>
+        </optgroup>
+        <optgroup label="Auto">
+          <option>Car Repair</option><option>Car Dealer</option>
+          <option>Car Wash</option><option>Tire Shop</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option>Hotel</option><option>Event Venue</option>
+          <option>Photographer</option><option>Printing Service</option>
+          <option>School</option><option>Tutor</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Custom type</label>
+      <input type="text" id="customCat" placeholder="e.g. Wedding Planner" data-testid="input-custom-category" />
+    </div>
+    <div class="fg">
+      <label>Max results</label>
+      <select id="limit" data-testid="select-limit">
+        <option value="15">15</option>
+        <option value="25" selected>25</option>
+        <option value="40">40</option>
+        <option value="60">60</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Delay per business</label>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <input type="number" id="delayInput" value="0" min="0" max="60" step="1" style="width:68px;text-align:center;" data-testid="input-delay" />
+        <span style="font-size:11px;color:var(--muted);font-weight:500;">sec</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="searchBtn" data-testid="search-submit-btn">Open Maps &amp; Start Scraping</button>
+
+  <div class="countdown-overlay" id="countdownOverlay" data-testid="countdown-overlay">
+    <div class="countdown-label" id="countdownLabel">Preparing search...</div>
+    <div class="countdown-number" id="countdownNumber">3</div>
+    <div class="countdown-bar-bg"><div class="countdown-bar" id="countdownBar"></div></div>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap" data-testid="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label" id="progressLabel">Initialising...</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    <button class="btn btn-abort" id="abortBtn" data-testid="abort-btn">Stop Scraping</button>
+  </div>
+
+  <div id="searchStats" style="display:none; margin-top:14px;" data-testid="search-stats">
+    <div class="stats-row">
+      <div class="stat"><div class="stat-n" id="statTotal">0</div><div class="stat-l">Total</div></div>
+      <div class="stat"><div class="stat-n green" id="statWebDesign">0</div><div class="stat-l">No Website</div></div>
+      <div class="stat"><div class="stat-n purple" id="statUnclaimed">0</div><div class="stat-l">Unclaimed</div></div>
+      <div class="stat"><div class="stat-n red" id="statReputation">0</div><div class="stat-l">No Replies</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEADS ──────────────────────────────────────── -->
+<div class="panel" id="panel-leads">
+  <div class="empty" id="leadsEmpty" data-testid="leads-empty">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">No leads yet</div>
+    <div class="empty-sub">Run a search to find and categorize business leads.</div>
+  </div>
+
+  <div id="leadsContent" style="display:none" data-testid="leads-content">
+    <div class="leads-header">
+      <div class="leads-title" id="leadsLabel">Leads</div>
+      <div class="export-row">
+        <button class="mini-btn" id="copyBtn" data-testid="copy-csv-btn">Copy CSV</button>
+        <button class="mini-btn" id="exportBtn" style="color:var(--green);border-color:var(--green-bd)" data-testid="export-csv-btn">Download</button>
+        <button class="mini-btn" id="clearBtn" style="color:var(--red);border-color:var(--red-bd)" data-testid="clear-btn">Clear</button>
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip active" data-filter="all" data-testid="chip-all">All (0)</div>
+      <div class="chip" data-filter="web_design" data-testid="chip-web-design">Web Design (0)</div>
+      <div class="chip" data-filter="unclaimed" data-testid="chip-unclaimed">Unclaimed (0)</div>
+      <div class="chip" data-filter="reputation" data-testid="chip-reputation">Reputation (0)</div>
+      <div class="chip" data-filter="optimization" data-testid="chip-optimization">Optimization (0)</div>
+      <div class="chip" data-filter="stale" data-testid="chip-stale">Stale Reviews (0)</div>
+      <div class="chip" data-filter="phone" data-testid="chip-phone">Has Phone (0)</div>
+      <div class="chip" data-filter="social" data-testid="chip-social">Has Socials (0)</div>
+    </div>
+    <div class="biz-list" id="bizList" data-testid="business-list"></div>
+  </div>
+</div>
+
+<!-- ── BENCHMARK ──────────────────────────────────── -->
+<div class="panel" id="panel-benchmark">
+  <div class="empty" id="benchEmpty" data-testid="bench-empty">
+    <div class="empty-icon">📊</div>
+    <div class="empty-title">No benchmark data</div>
+    <div class="empty-sub">Run a search first to generate competitor benchmarks.</div>
+  </div>
+
+  <div id="benchContent" style="display:none" data-testid="bench-content">
+    <div class="section-title">Top 3 Benchmark</div>
+    <div class="bench-summary">
+      <div class="bench-stat"><div class="stat-n" id="avgRating">0</div><div class="stat-l">Avg Rating</div></div>
+      <div class="bench-stat"><div class="stat-n" id="avgReviews">0</div><div class="stat-l">Avg Reviews</div></div>
+      <div class="bench-stat"><div class="stat-n" id="totalScraped">0</div><div class="stat-l">Total Scraped</div></div>
+    </div>
+
+    <div class="section-title">Top 3 Businesses</div>
+    <div id="top3List"></div>
+
+    <div class="section-title">All Businesses vs Top 3</div>
+    <div class="comp-list" id="comparisonList"></div>
+  </div>
+</div>
+
+<!-- ── SETTINGS ───────────────────────────────────── -->
+<div class="panel" id="panel-settings">
+  <div class="settings-section">
+    <div class="settings-title">Lead Options</div>
+    <div class="toggle-row">
+      <div class="tgl-info"><div class="tgl-label">Show WhatsApp button</div><div class="tgl-sub">Format phone to wa.me link</div></div>
+      <button class="toggle on" id="togWA" data-testid="toggle-whatsapp"></button>
+    </div>
+    <div class="toggle-row">
+      <div class="tgl-info"><div class="tgl-label">Show Find Email button</div><div class="tgl-sub">Opens Google search for email</div></div>
+      <button class="toggle on" id="togEmail" data-testid="toggle-email"></button>
+    </div>
+    <div class="toggle-row">
+      <div class="tgl-info"><div class="tgl-label">Also search Facebook</div><div class="tgl-sub">Opens Facebook search</div></div>
+      <button class="toggle" id="togFB" data-testid="toggle-facebook"></button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">Data Management</div>
+    <div class="toggle-row">
+      <div class="tgl-info"><div class="tgl-label">Duplicate History</div><div class="tgl-sub">Clear previously scraped business keys</div></div>
+      <button class="mini-btn" id="clearDupes" data-testid="clear-dupes-btn">Reset Dedup</button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">About</div>
+    <p style="font-size:11px;color:var(--muted);line-height:1.75;">
+      GMB Lead Hunter v4 PRO. Scrapes Google Maps, filters permanently closed businesses, deduplicates across sessions, and categorizes leads into: Web Design, Verification, Reputation Management, and Optimization opportunities. Includes competitor benchmarking and per-lead audit reports.<br/><br/>
+      <span style="color:var(--accent);font-weight:600;">Tip:</span> Don't close the Maps tab while scraping.
+    </p>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
