@@ -12,7 +12,8 @@ let allResults = [];
 let currentFilter = 'all';
 let pollTimer = null;
 let lastResultCount = 0;
-let settings = { showWA: true, showEmail: true, showFB: false };
+let currentQuery = '';   // search query shown as heading in Leads tab
+let settings = { showWA: true, showEmail: true, showFB: false, autoSave: true };
 
 const SOCIAL_PLATFORMS = {
   facebook: { label: 'Facebook' }, instagram: { label: 'Instagram' },
@@ -77,7 +78,7 @@ function setupChips() {
 
 // ── Toggles ───────────────────────────────────────────────────
 function setupToggles() {
-  ['showWA:togWA', 'showEmail:togEmail', 'showFB:togFB'].forEach(pair => {
+  ['showWA:togWA', 'showEmail:togEmail', 'showFB:togFB', 'autoSave:togAutoSave'].forEach(pair => {
     const [key, id] = pair.split(':');
     const btn = $(id);
     btn.classList.toggle('on', settings[key]);
@@ -91,18 +92,27 @@ function setupToggles() {
 
 // ── Storage load ──────────────────────────────────────────────
 async function loadFromStorage() {
-  const data = await chromeGet(['results', 'settings', 'scrapeState']);
+  const data = await chromeGet(['results', 'settings', 'scrapeState', 'searchQuery']);
   if (data.settings) Object.assign(settings, data.settings);
+  if (data.searchQuery) {
+    currentQuery = data.searchQuery;
+    updateSearchQueryHeading();
+  }
   if (data.results?.length) {
     allResults = data.results;
     updateStats();
     updateChipCounts();
     renderLeads();
   }
+  // Restore UI if scraper/manual mode was active when popup was closed
   if (data.scrapeState?.status === 'running') {
     startPolling();
     $('searchBtn').disabled = true;
     $('progressWrap').classList.add('show');
+  }
+  if (data.scrapeState?.status === 'manual') {
+    $('searchBtn').disabled = true;
+    setProgress(true, data.scrapeState.label || 'Manual mode — click any business profile to capture it', 0);
   }
 }
 
@@ -115,18 +125,30 @@ function handleStorageChange(changes) {
   if (changes.scrapeResults) {
     const results = changes.scrapeResults.newValue || [];
     if (results.length > lastResultCount) {
+      const isFirstResult = lastResultCount === 0;
       lastResultCount = results.length;
       allResults = results;
       updateStats();
       updateChipCounts();
       renderLeads();
+      if (isFirstResult) goTab('leads');
     }
+  }
+  // In manual mode, also persist captured results
+  if (changes.scrapeResults && !settings.autoSave) {
+    const results = changes.scrapeResults.newValue || [];
+    if (results.length) chrome.storage.local.set({ results });
   }
 }
 
 function applyState(state) {
   if (state.status === 'opening' || state.status === 'running') {
     setProgress(true, state.label || '...', state.pct || 0);
+    $('searchBtn').disabled = true;
+  }
+  if (state.status === 'manual') {
+    // Manual capture mode: show status bar but never auto-complete
+    setProgress(true, state.label || 'Manual mode — click any business profile to capture it', 0);
     $('searchBtn').disabled = true;
   }
   if (state.status === 'done') {
@@ -162,11 +184,13 @@ function startPolling() {
     if (data.scrapeResults) {
       const results = data.scrapeResults;
       if (results.length > lastResultCount) {
+        const isFirstResult = lastResultCount === 0;
         lastResultCount = results.length;
         allResults = results;
         updateStats();
         updateChipCounts();
         renderLeads();
+        if (isFirstResult) goTab('leads');
       }
     }
   }, 800);
@@ -198,15 +222,26 @@ async function startSearchWithCountdown() {
   }
   $('countdownBar').style.width = '100%';
   $('countdownNumber').textContent = '';
-  $('countdownLabel').textContent = 'Starting scrape!';
+  $('countdownLabel').textContent = settings.autoSave ? 'Starting scrape!' : 'Opening Maps — click profiles to capture!';
   await new Promise(r => setTimeout(r, 300));
   countdownEl.classList.remove('show');
 
   lastResultCount = 0;
-  startPolling();
+
+  // Persist the human-readable query so the Leads tab heading survives popup re-opens
+  currentQuery = `${cat} in ${loc}`;
+  chrome.storage.local.set({ searchQuery: currentQuery });
 
   const delayMs = Math.max(0, parseInt($('delayInput').value) || 0) * 1000;
-  chrome.runtime.sendMessage({ type: 'OPEN_MAPS_SEARCH', query: `${cat} in ${loc}`, limit, delayMs });
+
+  if (settings.autoSave) {
+    // Auto mode: full scraper runs and saves everything automatically
+    startPolling();
+    chrome.runtime.sendMessage({ type: 'OPEN_MAPS_SEARCH', query: currentQuery, limit, delayMs });
+  } else {
+    // Manual mode: open Maps and listen for user clicks on profiles
+    chrome.runtime.sendMessage({ type: 'OPEN_MAPS_MANUAL', query: currentQuery });
+  }
 }
 
 function abortSearch() {
@@ -248,18 +283,30 @@ function filteredResults() {
   return allResults.filter(f.fn);
 }
 
+// ── Search query heading ──────────────────────────────────────
+function updateSearchQueryHeading() {
+  const el = $('searchQueryHeading');
+  const textEl = $('searchQueryText');
+  if (!el || !textEl) return;
+  if (currentQuery) {
+    textEl.textContent = currentQuery;
+    el.classList.add('visible');
+  } else {
+    el.classList.remove('visible');
+  }
+}
+
 // ── Render Leads ──────────────────────────────────────────────
 function renderLeads() {
+  updateSearchQueryHeading();
   const filtered = filteredResults();
 
-  // No data at all — show the full empty state, hide content
   if (!allResults.length) {
     $('leadsEmpty').style.display = 'flex';
     $('leadsContent').style.display = 'none';
     return;
   }
 
-  // Data exists — always show leadsContent (keeps chip bar visible)
   $('leadsEmpty').style.display = 'none';
   $('leadsContent').style.display = 'block';
 
@@ -267,7 +314,6 @@ function renderLeads() {
   list.innerHTML = '';
 
   if (!filtered.length) {
-    // Render inline empty state inside the list so chips remain usable
     const label = FILTERS[currentFilter]?.label || currentFilter;
     list.innerHTML = `<div class="list-empty"><strong>No results</strong>No businesses match the "${label}" filter.<br>Try selecting a different filter above.</div>`;
     $('leadsLabel').textContent = `0 ${label} leads`;
